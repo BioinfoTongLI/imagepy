@@ -1,3 +1,4 @@
+TravisCI [![Build Status](https://travis-ci.org/BioinfoTongLI/imagepy.svg?branch=master)](https://travis-ci.org/BioinfoTongLI/imagepy)
 ImagePy Basic Tutorial   
 ==============
 [https://github.com/yxdragon/imagepy.git](https://github.com/yxdragon/imagepy.git)
