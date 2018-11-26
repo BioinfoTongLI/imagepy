@@ -1,4 +1,5 @@
 from skimage.io import imread, imsave
+import skimage.external.tifffile as tiffile
 from imagepy.core.util import fileio
 from imagepy import IPy
 import os
@@ -23,4 +24,15 @@ class Open(fileio.Reader):
 		fn, fe = os.path.splitext(fn) 
 		IPy.show_img(imgs, fn)
 
-plgs = [Open, Save]
+class tifffile_Open(fileio.Reader):
+	title = "Open with Tifffile"
+	filt = ['TIF', 'tif']
+
+	#process
+	def run(self, para = None):
+		imgs = tiffile.imread(para['path'])
+		fp, fn = os.path.split(para['path'])
+		fn, fe = os.path.splitext(fn)
+		IPy.show_img(imgs, fn)
+
+plgs = [Open, Save, tifffile_Open]
