@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+
+from imagepy.core.manager import ImageManager
 from ..manager import TableManager
 
 class TablePlus():
@@ -40,9 +42,19 @@ class TablePlus():
             include=[np.number])
 
     def select(self, rs=[], cs=[], byidx=False):
+        if len(rs) > 0:
+            selected_rows = rs
+        else:
+            return
         if byidx: rs, cs = self.data.index[rs], self.data.columns[cs]
         self.rowmsk = pd.Index(rs).astype(self.data.index.dtype)
         self.colmsk = pd.Index(cs).astype(self.data.columns.dtype)
+        if selected_rows[0] >= 0:
+            cur_ips = ImageManager.get()
+            if cur_ips is not None:
+                cur_ips.set_cur(selected_rows[-1])
+                cur_ips.update = 'pix'
+        self.data.loc[selected_rows] = 1
         print('tps select', rs, cs, self.rowmsk, self.colmsk)
 
     def get_titles(self):return self.data.columns

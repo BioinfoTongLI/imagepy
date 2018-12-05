@@ -3,8 +3,8 @@ from .tablewindow import *
 import wx.lib.agw.aui as aui
 
 class TablePanel ( wx.Panel ):
-    def __init__( self, parent):
-        wx.Panel.__init__ ( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 819,488 ), style = wx.TAB_TRAVERSAL )
+    def __init__( self, parent, panel_size=wx.Size( 819,488 )):
+        wx.Panel.__init__ ( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = panel_size, style = wx.TAB_TRAVERSAL )
         self.SetBackgroundColour( wx.Colour( 255, 255, 255 ) )
         WTableManager.add(self)
 

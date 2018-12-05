@@ -7,7 +7,8 @@ import sys
 from imagepy import IPy, root_dir
 import numpy as np
 import pandas as pd
-from imagepy.core.manager import TableManager, WTableManager
+from imagepy.core.manager import TableManager, WTableManager, ImageManager
+
 
 class TableBase(Grid.GridTableBase):
     """
@@ -189,6 +190,7 @@ class GridBase(Grid.Grid):
         self.table = TableBase()
         self.Bind(Grid.EVT_GRID_RANGE_SELECT, self.on_select)
         self.Bind(wx.EVT_IDLE, self.on_idle)
+        self.GetGridWindow().Bind(wx.EVT_MOTION, self.on_hover)
         self.tps = None
         self.handle = None
         self.Bind(Grid.EVT_GRID_LABEL_RIGHT_CLICK, self.on_label)
@@ -275,6 +277,13 @@ class GridBase(Grid.Grid):
         self.tps.update = False
         print('update')
 
+    def on_hover(self, event):
+        x, y = self.CalcUnscrolledPosition(event.GetX(), event.GetY())
+        coords = self.XYToCell(x, y)
+        cur_ips = ImageManager.get()
+        if cur_ips is not None:
+            cur_ips.set_cur(coords[0])
+            cur_ips.update = 'pix'
 
 #---------------------------------------------------------------------------
 
