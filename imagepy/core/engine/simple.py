@@ -8,11 +8,12 @@ import threading
 
 from ... import IPy
 from ...ui.panelconfig import ParaDialog
-from ..manager import TextLogManager, TaskManager, WidgetsManager
+from ..manager import TextLogManager, TaskManager, WidgetsManager, DocumentManager
 from time import time
 
 class Simple:
     title = 'SimpleFilter'
+    asyn = True
     note = []
     para = None
     'all, 8-bit, 16-bit, rgb, float, req_roi, stack, stack2d, stack3d, preview'
@@ -36,12 +37,11 @@ class Simple:
         if self.view==None:return True
         self.dialog = temp(IPy.get_window(), self.title)
         self.dialog.init_view(self.view, self.para, 'preview' in self.note, modal=self.modal)
-        doc = self.__doc__ or '### Sorry\nNo document yet!'
-        self.dialog.on_help = lambda : IPy.show_md(self.title, doc)
-        self.dialog.set_handle(lambda x:self.preview(self.ips, self.para))
+        self.dialog.on_help = lambda : IPy.show_md(self.title, DocumentManager.get(self.title))
+        self.dialog.set_handle(lambda x:self.preview(self.ips, self.para) is self.ips.update())
         if self.modal: return self.dialog.ShowModal() == wx.ID_OK
         self.dialog.on_ok = lambda : self.ok(self.ips)
-        self.dialog.on_cancel = lambda : self.cancel(self.ips)
+        self.dialog.on_cancel = lambda : self.cancel(self.ips) is self.ips.update()
         self.dialog.Show()
     
     def run(self, ips, imgs, para = None):pass
@@ -50,10 +50,10 @@ class Simple:
 
     def ok(self, ips, para=None, callafter=None):
         if para == None: para = self.para
-        if IPy.uimode() == 'no':
-            self.runasyn(ips, ips.imgs, para, callafter)
-        else: threading.Thread(target = self.runasyn, 
+        if self.asyn and IPy.uimode()!='no':
+            threading.Thread(target = self.runasyn, 
                     args = (ips, ips.imgs, para, callafter)).start()
+        else: self.runasyn(ips, ips.imgs, para, callafter)
         win = WidgetsManager.getref('Macros Recorder')
         if win!=None: win.write('{}>{}'.format(self.title, para))
 
@@ -62,7 +62,7 @@ class Simple:
         start = time()
         self.run(ips, imgs, para)
         IPy.set_info('%s: cost %.3fs'%(ips.title, time()-start))
-        ips.update = 'pix'
+        ips.update()
         TaskManager.remove(self)
         if callback!=None:callback()
 
@@ -118,6 +118,8 @@ class Simple:
         elif self.modal:
             if self.show():
                 self.ok(self.ips, para, callback)
-            else:self.cancel(self.ips)
+            else:
+                self.cancel(self.ips)
+                self.ips.update()
             if not self.dialog is None: self.dialog.Destroy()
         else: self.show()

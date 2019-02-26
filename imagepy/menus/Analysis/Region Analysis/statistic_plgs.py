@@ -13,6 +13,7 @@ from imagepy.core.manager import ImageManager
 from imagepy.core.roi.pointroi import PointRoi
 import pandas as pd
 from imagepy.core.mark import GeometryMark
+
 class Mark:
     def __init__(self, data):
         self.data = data
@@ -46,7 +47,7 @@ class RegionStatistic(Simple):
     para = {'con':'8-connect','inten':None, 'slice':False, 'max':True, 'min':True,'mean':False,
             'center':True, 'var':False,'std':False,'sum':False, 'extent':False}
     
-    view = [('img', 'intensity', 'inten', ''),
+    view = [('img', 'inten', 'intensity', ''),
             (list, 'con', ['4-connect', '8-connect'], str, 'conection', 'pix'),
             (bool, 'slice', 'slice'),
             ('lab', None, '=========  indecate  ========='),
@@ -108,16 +109,16 @@ class RegionStatistic(Simple):
  
             layer = {'type':'layer', 'body':[]}
             xy=np.int0(xy).T
+
             texts = [(i[1],i[0])+('id=%d'%n,) for i,n in zip(xy,range(len(xy)))]
             layer['body'].append({'type':'texts', 'body':texts})
             if para['extent']: layer['body'].append({'type':'rectangles', 'body':boxs})
             mark['body'][i] = layer
 
             data.extend(list(zip(*dt)))
-
-        IPy.show_table(pd.DataFrame(data, columns=titles), inten.title+'-region statistic')
+        IPy.show_table(pd.DataFrame(data, columns=titles), inten.title+'-pixels')
         inten.mark = GeometryMark(mark)
-        inten.update = True
+        inten.update()
 
 class RGMark:
     def __init__(self, data):
@@ -186,6 +187,6 @@ class IntensityFilter(Filter):
         img[:] = idx[buf]
 
         ImageManager.get(para['inten']).mark = RGMark((xy.T, msk))
-        ImageManager.get(para['inten']).update = True
+        ImageManager.get(para['inten']).update()
 
 plgs = [RegionStatistic, IntensityFilter]

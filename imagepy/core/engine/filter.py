@@ -11,7 +11,7 @@ import numpy as np
 from ... import IPy
 from ...ui.panelconfig import ParaDialog
 from ...core.manager import TextLogManager, ImageManager, \
-WindowsManager, TaskManager, WidgetsManager
+WindowsManager, TaskManager, WidgetsManager, DocumentManager
 from time import time
         
 def process_channels(plg, ips, src, des, para):
@@ -39,13 +39,13 @@ def process_one(plg, ips, src, img, para, callafter=None):
         src = src.astype(np.float32)
     rst = process_channels(plg, ips, src, buf if transint or transfloat else img, para)
     if not img is rst and not rst is None:
-        imgrange = {np.uint8:(0,255), np.uint16:(0,65535)}[img.dtype.type]
+        imgrange = {np.uint8:(0,255), np.uint16:(0, 65535)}[img.dtype.type]
         np.clip(rst, imgrange[0], imgrange[1], out=img)
     if 'auto_msk' in plg.note and not ips.get_msk() is None:
         msk = True ^ ips.get_msk()
         img[msk] = src[msk]
     IPy.set_info('%s: cost %.3fs'%(ips.title, time()-start))
-    ips.update = 'pix'
+    ips.update()
     TaskManager.remove(plg)
     if not callafter is None:callafter()
     
@@ -75,7 +75,7 @@ def process_stack(plg, ips, src, imgs, para, callafter=None):
             msk = True ^ ips.get_msk()
             i[msk] = src[msk]
     IPy.set_info('%s: cost %.3fs'%(ips.title, time()-start))
-    ips.update = 'pix'
+    ips.update()
     TaskManager.remove(plg)
     if not callafter is None:callafter()
     
@@ -101,8 +101,7 @@ class Filter:
         self.dialog = temp(WindowsManager.get(), self.title)
         self.dialog.init_view(self.view, self.para, 'preview' in self.note, modal=self.modal)
 
-        doc = self.__doc__ or '### Sorry\nNo document yet!'
-        self.dialog.on_help = lambda : IPy.show_md(self.title, doc)
+        self.dialog.on_help = lambda : IPy.show_md(self.title, DocumentManager.get(self.title))
         self.dialog.set_handle(lambda x:self.preview(self.ips, x))
         if self.modal: return self.dialog.ShowModal() == wx.ID_OK
         self.dialog.on_ok = lambda : self.ok(self.ips)
@@ -179,12 +178,12 @@ class Filter:
                     (self, ips, ips.snap, ips.img, para, callafter)).start()
                 if win!=None: win.write('{}>{}'.format(self.title, para))
             elif rst == 'cancel': pass
-        #ips.update = 'pix'
+        #ips.update()
         
     def cancel(self, ips):
         if 'auto_snap' in self.note:
             ips.swap()
-            ips.update = 'pix'
+            ips.update()
             
     def start(self, para=None, callafter=None):
         ips = self.ips

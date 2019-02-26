@@ -15,7 +15,7 @@ class ImagePlus:
         self.set_title(title)
         self.snap = None
         self.cur = 0
-        self.update = False
+        self.dirty = False
         self.scrchanged = False
         self.roi = None
         self.mark = None
@@ -31,6 +31,8 @@ class ImagePlus:
         self.range = (0, 255)
         self.set_imgs(imgs)
 
+    def update(self): self.dirty = True
+    
     def set_title(self, title):
         self.title = ImageManager.name(title)
 
@@ -119,10 +121,6 @@ class ImagePlus:
 
     def lookup(self, img=None):
         if img is None: img = self.img
-        #print(self.channels, self.dtype, img.dtype)
-        #if img.ndim==2 and img.dtype==np.uint8:
-        #    return self.lut[img]
-        #el
         if img.ndim==2:
             k = 255.0/(max(1e-10, self.range[1]-self.range[0]))
             bf = np.clip(img, self.range[0], self.range[1])

@@ -1,5 +1,3 @@
-scipy
-numpy
 scikit-image
 shapely
 wxpython
@@ -9,3 +7,5 @@ xlrd
 xlwt
 openpyxl
 pydicom
+read-roi
+numpy-stl
