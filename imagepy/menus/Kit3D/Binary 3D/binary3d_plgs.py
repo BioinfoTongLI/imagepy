@@ -4,6 +4,7 @@ from imagepy.core.engine import Simple
 from skimage.morphology import skeletonize_3d
 from imagepy.ipyalg import find_maximum, watershed
 from skimage.filters import apply_hysteresis_threshold
+from imagepy.ipyalg import distance_transform_edt
 import numpy as np
 
 class Dilation(Simple):
@@ -78,7 +79,9 @@ class Distance3D(Simple):
 
     #process
     def run(self, ips, imgs, para = None):
-        dismap = ndimg.distance_transform_edt(imgs>0)
+        imgs[:] = imgs>0
+        dtype = imgs.dtype if imgs.dtype in (np.float32, np.float64) else np.uint16
+        dismap = distance_transform_edt(imgs, output=dtype)
         imgs[:] = np.clip(dismap, ips.range[0], ips.range[1])
 
 class Watershed(Simple):
@@ -94,13 +97,13 @@ class Watershed(Simple):
     ## TODO: Fixme!
     def run(self, ips, imgs, para = None):
         imgs[:] = imgs > 0
-        dist = -ndimg.distance_transform_edt(imgs)
-        pts = find_maximum(dist, para['tor'], False)
+        dist = distance_transform_edt(imgs, output=np.uint16)
+        pts = find_maximum(dist, para['tor'], True)
         buf = np.zeros(imgs.shape, dtype=np.uint32)
         buf[pts[:,0], pts[:,1], pts[:,2]] = 2
         imgs[pts[:,0], pts[:,1], pts[:,2]] = 2
         markers, n = ndimg.label(buf, np.ones((3, 3, 3)))
-        line = watershed(dist, markers, line=True, conn=para['con']+1)
+        line = watershed(dist, markers, line=True, conn=para['con']+1, up=False)
         msk = apply_hysteresis_threshold(imgs, 0, 1)
         imgs[:] = imgs>0; imgs *= 255; imgs *= ~((line==0) & msk)
 
