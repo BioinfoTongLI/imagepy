@@ -13,7 +13,7 @@ from ...ui.panelconfig import ParaDialog
 from ...core.manager import TextLogManager, ImageManager, \
 WindowsManager, TaskManager, WidgetsManager, DocumentManager
 from time import time
-        
+
 def process_channels(plg, ips, src, des, para):
     if ips.channels>1 and not 'not_channel' in plg.note:
         for i in range(ips.channels):
@@ -29,6 +29,7 @@ def process_channels(plg, ips, src, des, para):
 def process_one(plg, ips, src, img, para, callafter=None):
     TaskManager.add(plg)
     start = time()
+    
     transint = '2int' in plg.note and ips.dtype in (np.uint8, np.uint16)
     transfloat = '2float' in plg.note and not ips.dtype in (np.complex128, np.float32, np.float64)
     if transint: 
@@ -52,6 +53,7 @@ def process_one(plg, ips, src, img, para, callafter=None):
 def process_stack(plg, ips, src, imgs, para, callafter=None):
     TaskManager.add(plg)
     start = time()
+
     transint = '2int' in plg.note and ips.dtype in (np.uint8, np.uint16)
     transfloat = '2float' in plg.note and not ips.dtype in (np.complex128, np.float32, np.float64)
     if transint: 
